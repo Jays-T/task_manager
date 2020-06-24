@@ -7,7 +7,7 @@ if os.path.exists("env.py"):
 
 app = Flask(__name__)
 
-#Environment Variables
+# Environment Variables
 app.config["MONGO_DBNAME"] = "task_manager"
 app.config["MONGO_URI"] = os.getenv('MONGO_URI')
 
@@ -17,12 +17,22 @@ mongo = PyMongo(app)
 @app.route('/')
 @app.route('/get_tasks')
 def get_tasks():
-    return render_template("tasks.html", tasks=mongo.db.tasks.find())
+    return render_template("tasks.html",
+                           tasks=mongo.db.tasks.find())
 
 
 @app.route('/add_tasks')
 def add_tasks():
-    return render_template("addtasks.html")
+    return render_template("addtasks.html",
+                           categories=mongo.db.categories.find())
+
+
+@app.route('/insert_task', methods=['POST'])
+def insert_task():
+    tasks = mongo.db.tasks
+    tasks.insert_one(request.form.to_dict())
+    return redirect(url_for('get_tasks'))
+
 
 if __name__ == '__main__':
     app.run(host=os.environ.get('IP'),
